@@ -7,7 +7,7 @@ from airflow.operators.dummy_operator import DummyOperator
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime.utcnow(),
+    'start_date': datetime(2019, 1, 1),
     'email': ['airflow@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -21,7 +21,7 @@ dag = DAG(
 
 start = DummyOperator(task_id='run_this_first', dag=dag)
 
-passing = KubernetesPodOperator(namespace='default',
+passing = KubernetesPodOperator(namespace='airflow',
                           image="Python:3.6",
                           cmds=["Python","-c"],
                           arguments=["print('hello world')"],
@@ -29,10 +29,9 @@ passing = KubernetesPodOperator(namespace='default',
                           name="passing-test",
                           task_id="passing-task",
                           get_logs=True,
-                          dag=dag
-                          )
+                          dag=dag)
 
-failing = KubernetesPodOperator(namespace='default',
+failing = KubernetesPodOperator(namespace='airflow',
                           image="ubuntu:1604",
                           cmds=["Python","-c"],
                           arguments=["print('hello world')"],
@@ -40,8 +39,7 @@ failing = KubernetesPodOperator(namespace='default',
                           name="fail",
                           task_id="failing-task",
                           get_logs=True,
-                          dag=dag
-                          )
+                          dag=dag)
 
 passing.set_upstream(start)
 failing.set_upstream(start)
